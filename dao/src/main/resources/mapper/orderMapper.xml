@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fsc.site.dao.OrderMapperDao">
+    <!--插入订单详情到订单表中-->
+    <insert id="addOrder" useGeneratedKeys="true" keyProperty="orderId">
+        insert into t_order(receiver_name,mobile,address,message,create_date,pay_date,delivery_date,confirm_date,status,pay_money,user_id)
+        value (#{receiverName},#{mobile},#{address},#{message},#{createDate},#{payDate},#{deliveryDate},#{confirmDate},#{status},#{payMoney},#{userId})
+    </insert>
+    <!--批量插入订单项-->
+    <insert id="addOrderItem">
+        insert into t_orderItem(order_id,goods_id,goods_number,goods_price)
+        value
+        <foreach collection="list" separator="," item="item">
+            (#{item.orderId},#{item.goodsId},#{item.goodsNumber},#{item.goodsPrice})
+        </foreach>
+    </insert>
+
+    <!--查询订单的所有信息 包括商品信息-->
+    <select id="queryOrders" resultMap="queryOrdersResult">
+        SELECT a.order_id,a.receiver_name,a.mobile,a.address,a.message,a.create_date,a.pay_date,a.delivery_date,a.confirm_date,`status`,a.pay_money,a.user_id
+        FROM t_order as a
+        order by a.order_id desc
+    </select>
+    <!--用户查询自己的所有订单 包含商品信息-->
+    <select id="getUserOrders" resultMap="queryOrdersResult">
+        SELECT a.order_id,a.receiver_name,a.mobile,a.address,a.message,a.create_date,a.pay_date,a.delivery_date,a.confirm_date,`status`,a.pay_money,a.user_id
+        FROM t_order as a
+        where a.user_id = #{userId}
+        <if test="status==null">
+            and status!=4
+            order by order_id desc
+        </if>
+        <if test="status==0">
+            and status = 0
+            order by create_date desc
+        </if>
+        <if test="status==1">
+            and status = 1
+            order by pay_date desc
+        </if>
+        <if test="status==2">
+            and status = 2
+            order by delivery_date desc
+        </if>
+        <if test="status==3">
+            and status = 3
+            order by confirm_date desc
+        </if>
+    </select>
+    <!--查询订单详情的resultMao-->
+    <resultMap id="queryOrdersResult" type="fsc.site.pojo.ResultOrder">
+        <id property="orderId" column="order_id"></id>
+        <result property="receiverName" column="receiver_name"></result>
+        <result property="mobile" column="mobile"></result>
+        <result property="address" column="address"></result>
+        <result property="message" column="message"></result>
+        <result property="createDate" column="create_date"></result>
+        <result property="createDate" column="create_date"></result>
+        <result property="payDate" column="pay_date"></result>
+        <result property="deliveryDate" column="delivery_date"></result>
+        <result property="confirmDate" column="confirm_date"></result>
+        <result property="status" column="status"></result>
+        <result property="payMoney" column="pay_money"></result>
+        <result property="userId" column="user_id"></result>
+        <collection ofType="fsc.site.pojo.ResultOrderGoods" property="resultOrderGoods"  column="order_id" select="queryByOrderId">
+        </collection>
+    </resultMap>
+    <!--用于嵌套select来查询订单详情 不能用一个查询直接全部查出来那样会导致分页没有效果-->
+    <select id="queryByOrderId" resultType="fsc.site.pojo.ResultOrderGoods">
+        SELECT b.goods_name,b.image_url,a.goods_id,a.goods_price,a.goods_number
+        FROM t_orderItem as a
+        JOIN t_goods as b ON a.goods_id = b.goods_id
+        WHERE a.order_id = #{orderId}
+    </select>
+
+    <!--获取订单的数量-->
+    <select id="getOrderCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_order
+    </select>
+    <!--用户获取某种状态的订单数量-->
+    <select id="getUserOrderCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_order
+        where user_id = #{userId}
+        <if test="status!=null">
+            and status = #{status}
+        </if>
+        and status!=4
+    </select>
+    <!--对订单进行付款 简单的模拟一下 没有账户余额和付款密码那些-->
+    <update id="payOrder">
+        update t_order
+        set status = 1,pay_date=#{time}
+        where order_id = #{orderId} and status=0
+    </update>
+    <!--查询出这个订单所属用户的id-->
+    <select id="queryUserId" resultType="java.lang.Integer">
+        select user_id
+        from t_order
+        where order_id = #{orderId}
+    </select>
+    <!--对订单进行发货操作-->
+    <update id="dealOrder">
+        update t_order
+        set status = 2,delivery_date = #{time}
+        where order_id = #{orderId} and status = 1
+    </update>
+    <!--对订单进行关闭操作-->
+    <update id="openOrder">
+        update t_order
+        set status = 4
+        where order_id = #{orderId} and status !=3
+    </update>
+    <!--确认收货一个订单-->
+    <update id="confirmOrder">
+        update t_order
+        set status = 3,confirm_date = #{time}
+        where order_id = #{orderId} and status = 2
+    </update>
+    <!--获取待处理订单的的数量-->
+    <select id="getUnCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_order
+        where status = 1
+    </select>
+    <!--获取未处理订单列表-->
+    <select id="getUnOrders" resultMap="queryOrdersResult">
+        SELECT a.order_id,a.receiver_name,a.mobile,a.address,a.message,a.create_date,a.pay_date,a.delivery_date,a.confirm_date,`status`,a.pay_money,a.user_id
+        FROM t_order as a
+        where status = 1
+    </select>
+    <!--查看当前订单是否已经支付-->
+    <select id="getStatus" resultType="java.lang.Integer">
+        select `status`
+        from t_order
+        where order_id = #{orderId}
+    </select>
+    <!--返回某个订单的价格-->
+    <select id="getOrderMoney" resultType="java.lang.Double">
+        select pay_money
+        from t_order
+        where order_id = #{orderId}
+    </select>
+    <!--查询订单项的商品信息-->
+    <select id="selectOrderItem" resultType="fsc.site.pojo.OrderItem">
+        select goods_id,goods_number
+        from t_orderItem
+        where order_id = #{orderId}
+    </select>
+</mapper>

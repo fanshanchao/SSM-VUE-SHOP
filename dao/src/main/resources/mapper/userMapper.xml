@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--这个文件编写已经映射了的sql语句-->
+<mapper namespace="fsc.site.dao.UserMapperDao">
+    <!--namespace是命名空间 现在使用接口来查询 这个命名空间要写为接口的路径-->
+    <!--根据用户名查用户的用户名和密码-->
+    <select id="queryByUserName" parameterType="java.lang.String" resultType="fsc.site.pojo.User">
+        select user_name,user_password from t_user where user_name =#{userName}
+    </select>
+    <!--通过用户名查询用户的id-->
+    <select id="queryIdByUserName" resultType="fsc.site.pojo.User">
+        select user_id,nick_name from t_user where user_name =#{userName}
+    </select>
+    <!--通过邮箱查看是否有这个邮箱-->
+    <select id="queryEmailByEmail" resultType="fsc.site.pojo.User">
+        select email from t_user where email =#{email}
+    </select>
+    <!--通过会员名查看是否有这个邮箱-->
+    <select id="queryEmailByUserName" resultType="fsc.site.pojo.User">
+        select user_name from t_user where user_name = #{userName}
+    </select>
+    <!--添加会员到数据库中-->
+    <insert id="addUser" useGeneratedKeys="true"
+            keyProperty="userId">
+        insert into t_user(user_name,user_password,nick_name,email,status) value(#{userName},#{userPassword},#{nickName},#{email},#{status})
+    </insert>
+    <!--添加会员权限信息到数据库中-->
+    <insert id="addUserRole">
+        insert into t_user_role(role_id,user_id) value (#{roleId},#{userId})
+    </insert>
+
+    <!--查询一个用户的权限信息-->
+    <select id="getUserPermission" resultMap="permissionResult">
+        SELECT b.user_id,b.nick_name,a.role_id,c.role_name,e.menu_code,e.permission_code
+        FROM t_user_role a
+        JOIN t_user b ON a.user_id = b.user_id
+        JOIN t_role c ON a.role_id = c.role_id
+        JOIN t_role_pre d ON c.role_id =d.role_id
+        JOIN t_permission e ON d.permission_id = e.permission_id
+        WHERE b.user_name=#{userName}
+    </select>
+    <!--查询出来用户的权限信息映射 这里会自动合并那些重复的数据 设置了id就通过id来进行判断这行数据是否相同-->
+    <resultMap id="permissionResult" type="fsc.site.pojo.UserPermission">
+        <id property="userId" column="user_id"></id>
+        <result property="nickName" column="nick_name"></result>
+        <result property="roleId" column="role_id" ></result>
+        <result property="roleName" column="role_name"></result>
+        <collection property="menuList"  ofType="java.lang.String">
+            <result column="menu_code"></result>
+        </collection>
+        <collection property="permissionList" ofType="java.lang.String">
+            <result column="permission_code"></result>
+        </collection>
+    </resultMap>
+
+
+    <!--根据用户名查询出这个用户所具有的所有权限 用来进行权限管理的-->
+    <select id="getUserPermissionList" resultType="java.lang.String">
+        SELECT e.permission_code
+        FROM t_user_role a
+        JOIN t_user b ON a.user_id = b.user_id
+        JOIN t_role c ON a.role_id = c.role_id
+        JOIN t_role_pre d ON c.role_id = d.role_id
+        JOIN t_permission e ON e.permission_id = d.permission_id
+        WHERE b.user_name=#{userName}
+    </select>
+
+    <!--用来测试返回用户的所有信息 为了安全 因为只有一个超级管理员 排除超级管理员-->
+    <select id="getUsers" resultType="fsc.site.pojo.User">
+        select a.user_id as user_id,a.user_name as user_name,a.nick_name as nick_name,a.email as email,a.status as status,c.role_name as role_name
+        from t_user a
+        join t_user_role as b
+        on a.user_id = b.user_id
+        join t_role as c
+        on b.role_id = c.role_id
+        where c.role_id != 1
+    </select>
+
+    <!--返回整个商城用户的数量-->
+    <select id="getUserCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_user
+    </select>
+
+    <!--这里使用动态mysql更新用户-->
+    <update id="updateUser">
+        update t_user
+        <set>
+            <if test="userName!=null">
+                user_name = #{userName},
+            </if>
+            <if test="userPassword!=null">
+                user_password = #{userPassword},
+            </if>
+            <if test="nickName!=null">
+                nick_name = #{nickName},
+            </if>
+            <if test="email!=null">
+                email = #{email},
+            </if>
+        </set>
+        where user_id=#{userId}
+    </update>
+    <!--锁住一个用户-->
+    <update id="lockUser">
+        update t_user
+        set status = 1
+        where user_id = #{userId}
+    </update>
+    <!--解锁一个用户-->
+    <update id="unlockUser">
+        update t_user
+        set status = 0
+        where user_id = #{userId}
+    </update>
+</mapper>

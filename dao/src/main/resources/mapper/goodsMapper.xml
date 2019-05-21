@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fsc.site.dao.GoodsMapperDao">
+    <!--查询所有分类信息-->
+    <select id="queryTypes" resultType="fsc.site.pojo.GoodsType">
+        select type_id,type_name
+        from t_goodsType
+    </select>
+    <!--创建一个分类-->
+    <insert id="addType">
+        insert into t_goodsType(type_name) value(#{typeName})
+    </insert>
+    <!--根据一个分类名称去查询是否表中有已经存在的分类-->
+    <select id="queryTypeId" resultType="java.lang.Integer">
+          select type_id
+          from t_goodsType
+          where type_name=#{typeName}
+    </select>
+    <!--添加一个商品-->
+    <insert id="addGoods" useGeneratedKeys="true" keyProperty="goodsId">
+        insert into t_goods(goods_name,goods_desc,goods_price,type_id,goods_repertory,image_url,goods_status,goods_sales)
+        value(#{goodsName},#{goodsDesc},#{goodsPrice},#{typeId},#{goodsRepertory},#{imageUrl},#{goodsStatus},#{goodsSales})
+    </insert>
+
+    <!--查询所有的商品-->
+    <select id="getGoods" resultType="fsc.site.pojo.ResultGoods">
+        select a.goods_id,a.goods_name,a.goods_desc,a.goods_price,b.type_name,a.goods_repertory,a.image_url,a.goods_status,a.goods_sales
+        from t_goods as a
+        join t_goodsType as b
+        on a.type_id = b.type_id
+        where
+        <if test="typeId!=null and typeId!=0">
+             a.type_id =  #{typeId} and
+        </if>
+        a.goods_status = 0 and a.goods_repertory>0
+        <choose>
+            <when test="sortName!=null and sortName=='priceDesc'">
+                order by a.goods_price desc
+            </when>
+            <when test="sortName!=null and sortName=='priceAsc'">
+                order by a.goods_price asc
+            </when>
+            <when test="sortName!=null and sortName=='salesDesc'">
+                order by a.goods_sales desc
+            </when>
+            <otherwise>
+                order by a.goods_id desc
+            </otherwise>
+        </choose>
+    </select>
+    <!--更新一个商品-->
+    <update id="updateGoods">
+        update t_goods
+        <set>
+            <if test="goodsName!=null">
+                goods_name = #{goodsName},
+            </if>
+            <if test="goodsDesc!=null">
+                goods_desc = #{goodsDesc},
+            </if>
+            <if test="goodsPrice!=0">
+                goods_price = #{goodsPrice},
+            </if>
+            <if test="typeId!=0">
+                type_id = #{typeId},
+            </if>
+            <if test="goodsRepertory!=0">
+                goods_repertory = #{goodsRepertory},
+            </if>
+            <if test="imageUrl!=null">
+                image_url = #{imageUrl},
+            </if>
+        </set>
+        where goods_id = #{goodsId}
+    </update>
+    <!--下架一个商品-->
+    <update id="outGoods">
+        update t_goods
+        set goods_status = 1
+        where goods_id = #{goodsId}
+    </update>
+    <!--上架一个商品-->
+    <update id="goGoods">
+        update t_goods
+        set goods_status = 0
+        where goods_id = #{goodsId}
+    </update>
+    <!--获取商品的数量-->
+    <select id="getGoodsCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_goods
+        <if test="typeId!=null and typeId!=0">
+            where type_id = #{typeId}
+        </if>
+    </select>
+    <!--查询一个商品的价格-->
+    <select id="queryGoodsPrice" resultType="java.lang.Double">
+        select goods_price
+        from   t_goods
+        where  goods_id = #{goodsId}
+    </select>
+    <!--查询一个商品的信息-->
+    <select id="getGoodsById" resultType="fsc.site.pojo.ResultGoods">
+        select a.goods_id,a.goods_name,a.goods_desc,a.goods_price,b.type_name,a.goods_repertory,a.image_url,a.goods_sales
+        from t_goods as a
+        join t_goodsType as b
+        on a.type_id = b.type_id
+        where goods_id = #{goodsId} and goods_status = 0
+    </select>
+
+    <!--进行购买一个商品的操作-->
+    <update id="payGoods">
+       update t_goods
+       set goods_repertory = goods_repertory-#{nums},goods_sales=goods_sales+#{nums}
+       where goods_repertory >=#{nums} and goods_id=#{goodsId}
+    </update>
+</mapper>

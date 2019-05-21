@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fsc.site.dao.LikesMapperDao">
+    <!--进行一次网站点赞操作-->
+    <update id="giveLike">
+        update t_likes
+        set likenum = likenum+1
+    </update>
+    <!--获取商城点赞数-->
+    <select id="getLikes" resultType="java.lang.Integer">
+        select likenum
+        from t_likes
+        where id = 1
+    </select>
+</mapper>

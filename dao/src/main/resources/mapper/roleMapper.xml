@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fsc.site.dao.RoleMapperDao">
+    <!--查询所有角色的权限信息 除了超级管理员-->
+    <select id="getRolesPermission" resultMap="resultMap1">
+        SELECT b.role_id,b.role_name,c.menu_code,c.permission_code
+        FROM t_role_pre a
+        JOIN t_role b ON a.role_id = b.role_id
+        JOIN t_permission c ON a.permission_id=c.permission_id
+        WHERE b.role_id!=1
+    </select>
+    <!--查询所有角色的权限信息的映射-->
+    <resultMap id="resultMap1" type="fsc.site.pojo.RolePermission">
+        <id property="roleId" column="role_id"></id>
+        <result property="roleName" column="role_name"></result>
+        <collection property="menuList" ofType="java.lang.String">
+            <result column="menu_code"></result>
+        </collection>
+        <collection property="permissionList" ofType="java.lang.String">
+            <result column="permission_code"></result>
+        </collection>
+    </resultMap>
+
+    <!--更新一个用户的id-->
+    <update id="updateRole">
+        update t_user_role set role_id = #{roleId} where user_id=#{userId}
+    </update>
+    <!--修改一个角色的名字-->
+    <update id="updateRoleName">
+        UPDATE t_role
+        SET role_name = #{roleName}
+        WHERE role_id = #{roleId}
+    </update>
+    <!--删除一个角色的所有权限信息-->
+    <delete id="deleteRolePermission">
+        DELETE
+        FROM t_role_pre
+        WHERE role_id = #{roleId}
+    </delete>
+    <!--根据角色名查看用户的id-->
+    <select id="selectRoleId" resultType="fsc.site.pojo.Role">
+        SELECT role_id
+        FROM t_role
+        WHERE role_name = #{roleName}
+    </select>
+    <!--批量插入一个角色的权限信息-->
+    <insert id="batchInsertPermission">
+        insert into t_role_pre(role_id,permission_id)
+        value 
+        <foreach collection="permissionList" separator="," item="item">
+            (#{roleId},#{item,jdbcType=BIGINT})
+        </foreach>
+    </insert>
+    <!--创建一个角色-->
+    <insert id="addRole" useGeneratedKeys="true" keyProperty="roleId">
+        insert into t_role(role_name) value (#{roleName})
+    </insert>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="bean" />
+        <module name="core" />
+        <module name="dao" />
+        <module name="myweb" />
+        <module name="service" />
+        <module name="task" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="8" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="bean" options="" />
+      <module name="core" options="" />
+      <module name="dao" options="" />
+      <module name="myweb" options="" />
+      <module name="service" options="" />
+      <module name="task" options="" />
+    </option>
+  </component>
+</project>
