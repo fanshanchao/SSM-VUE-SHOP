@@ -102,7 +102,7 @@ public class ShiroConfig {
         filterChain.put("/logout==GET","anon");
         //配置不会被拦截器拦截的的链接 注意 这里是顺序判断的  这里是表示除了登陆url以外 其他都不能匿名访问  这里还一些url还要慢慢来配置
         filterChain.put("/login==POST","anon");
-        filterChain.put("/getCode==GET","anon");
+        filterChain.put("/getCode==POST","anon");
         filterChain.put("/refresh==GET","anon");
         filterChain.put("/user==POST","anon");
         filterChain.put("/goodsTypes==GET","anon");

@@ -42,7 +42,8 @@ public class EmailConfig {
         //设置邮箱一些基本配置
         emailProperties.setProperty("mail.smtp.auth",env.getProperty("mail.smtp.auth"));
         emailProperties.setProperty("mail.smtp.timeout",env.getProperty("mail.smtp.timeout"));
-        emailProperties.setProperty("mail.smtp.socketFactory",env.getProperty("mail.smtp.socketFactory"));
+        emailProperties.setProperty("mail.smtp.socketFactory.class",env.getProperty("mail.smtp.socketFactory.class"));
+        emailProperties.setProperty("mail.smtp.socketFactory.port",env.getProperty("mail.smtp.socketFactory.port"));
         javaMailSender.setJavaMailProperties(emailProperties);
         return javaMailSender;
     }
