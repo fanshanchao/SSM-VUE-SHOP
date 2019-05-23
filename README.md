@@ -2,6 +2,16 @@
 [前端代码地址]()
 ## 项目介绍
 前后端分离的网上商城。实现了普通商城拥有的主要功能，并且利用shiro实现了后台权限管理，可以修改用户权限，修改用户角色。并且只有非商城会有的权限才可以进入后台管理页面。并且整个项目使用rest风格来获取数据。前后端通过json数据来进行交互。[项目演示地址](http://120.76.56.254:8084/#/)
+## 项目代码结构
+--bean  项目所到的javabean
+--core  本来想把核心代码写在里面的，但好像用不到...
+--dao  访问数据库的代码
+--myweb spring，spring mvc，shiro的核心代码和整个项目的配置都在这里面
+--service 服务层代码
+--task 本来想把定时任务的代码写在里面，但是项目没用到定时任务
+
+
+
 ## 项目所用技术
 ### 后端
 1. **SSM**：并且使用配置类无xml。
@@ -56,7 +66,7 @@
 ### 支付模块
 支付简单的模拟了下，没有输入密码等验证操作，这个模块其实值得好好写一写的，以后要是还有时间就再研究下这个模块吧。
 ### 搜索商品模块
-搜索功能用elasticseearch做的，学elasticsearch快一周，好在最后成功的用上了。elasticsearch里面的数据和mysql商品表里面的是一样的，每次向mysql添加商品修改商品也会发送请求到elasticsearch中去添加或修改商品（这里是通过使用elasticsearch的java api完成的）。
+搜索功能用elasticseearch做的，学elasticsearch快一周，好在最后成功的用上了。elasticsearch里面的数据和mysql商品表里面的是一样的，每次向mysql添加商品修改商品也会发送请求到elasticsearch中去添加或修改商品（这里是通过使用elasticsearch的java api完成的）。[我的elasticsearch安装和使用笔记](https://segmentfault.com/n/1330000019063224)
 ## 部署过程
 经过了上次部署，这次部署还是非常顺利的，大概花了一下午就搞好了。前端vue打包放在了nginx里，nginx也用作了图片服务器保存商品的图片，elasticsearch做了搜索功能，后端代码直接打包war放在tomcat的webapp目录下。
 ## 最后
