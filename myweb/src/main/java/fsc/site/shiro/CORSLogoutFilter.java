@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author fanshanchao
  * @date 2019/3/27 16:05
+ * 重写登陆过滤器 过滤potion请求
  */
 public class CORSLogoutFilter extends LogoutFilter {
     @Override

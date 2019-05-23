@@ -7,7 +7,7 @@ import javax.servlet.ServletRequest;
 
 /**
  * @author fanshanchao
- * @date 2019/4/16 10:45
+ * @date 2019/4/16 10:45 注意项目并没有用到这个过滤器 这个是用来jwt鉴权filter
  * 重写过滤器匹配规则以让它，增加rest风格支持
  */
 public abstract class  BPathMatchingFilter extends PathMatchingFilter {

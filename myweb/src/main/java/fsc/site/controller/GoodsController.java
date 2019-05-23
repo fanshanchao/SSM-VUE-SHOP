@@ -81,7 +81,9 @@ public class GoodsController {
         }
         //文件名前面加上当前时间毫秒数 避免上传同名的图片导致覆盖
         String newFileName = new Date().getTime()+file.getOriginalFilename();
-        String filePath = goodImagePath+"\\"+newFileName;
+        //由于是在linux上 所以这个路径要重新改一下
+        String filePath = goodImagePath+newFileName;
+        //String filePath = goodImagePath+"\\"+newFileName;// window下
         System.out.println(filePath);
         //根据这个路径去创建一个文件
         File file1 = new File(filePath);
