@@ -32,4 +32,4 @@
 
 ### 后台管理模块
 后台管理又分为**用户管理**，**商品管理**，**订单管理**三个模块。由于后台管理涉及到权限问题，所以后台管理最重要的就是权限管理这块。我这个项目是前后端都做了权限管理，前端根据后端返回的权限信息动态的生成路由和按钮。后端使用shiro做了权限管理，权限管理用的5张mysql表如下：
-![Image text](https://raw.github.com/yourName/repositpry/master/yourprojectName/img-folder/test.jpg)
+![Image text](https://github.com/fanshanchao/images/blob/master/shopImages/Snipaste_2019-05-23_20-24-17.png)
