@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fsc.site.dao.SeckillMapperDao">
+
+    <!--创建一个秒杀-->
+    <insert id="addSeckill" useGeneratedKeys="true" keyProperty="seckillId">
+        insert into t_seckill(goods_id,seckill_repertory,seckill_price,create_time,start_time,end_time)
+        value(#{goodsId},#{seckillRepertory},#{seckillPrice},#{createTime},#{startTime},#{endTime})
+    </insert>
+    <!--获取秒杀列表 包括商品信息-->
+    <select id="getSeckillList" resultMap="seckillResult">
+        SELECT a.seckill_id,a.seckill_repertory,a.seckill_price,a.start_time,a.end_time,b.goods_id,b.goods_name,b.goods_desc,b.image_url
+        FROM t_seckill as a
+        INNER JOIN t_goods as b
+        ON a.goods_id = b.goods_id
+    </select>
+    <!--根据id获取一个秒杀信息 包括商品信息-->
+    <select id="getSeckill" resultMap="seckillResult">
+        SELECT a.seckill_id,a.seckill_repertory,a.create_time,a.seckill_price,a.start_time,a.end_time,b.goods_id,b.goods_name,b.goods_desc,b.image_url
+        FROM t_seckill as a
+        INNER JOIN t_goods as b
+        ON a.goods_id = b.goods_id
+        where seckill_id = #{seckillId}
+    </select>
+    <resultMap id="seckillResult" type="fsc.site.pojo.Seckill">
+        <id property="seckillId" column="seckill_id"></id>
+        <result property="seckillRepertory" column="seckill_repertory"></result>
+        <result property="createTime" column="create_time"></result>
+        <result property="seckillPrice" column="seckill_price"></result>
+        <result property="startTime" column="start_time"></result>
+        <result property="endTime" column="end_time"></result>
+        <association property="goods" javaType="fsc.site.pojo.Goods">
+            <result property="goodsId" column="goods_id"></result>
+            <result property="goodsName" column="goods_name"></result>
+            <result property="goodsDesc" column="goods_desc"></result>
+            <result property="imageUrl" column="image_url"></result>
+        </association>
+    </resultMap>
+
+    <!--秒杀库存减一-->
+    <update id="reduceRepertory">
+        update t_seckill set seckill_repertory = seckill_repertory - 1
+        where seckill_id = #{seckillId}
+        and seckill_repertory > 0
+        and end_time >= #{killTime}
+        and start_time <![CDATA[ <= ]]> #{killTime}
+    </update>
+
+    <!--使用存储过程执行秒杀-->
+    <select id="seckillProcess" statementType="CALLABLE">
+        call exec_seckill (
+          #{seckillId,jdbcType=INTEGER,mode=IN},
+          #{userId,jdbcType=INTEGER,mode=IN},
+          #{createTime ,jdbcType=TIMESTAMP,mode=IN},
+          #{result,jdbcType=INTEGER,mode=OUT},
+          #{receiverName,jdbcType=VARCHAR,mode=IN},
+          #{mobile,jdbcType=VARCHAR,mode=IN},
+          #{address,jdbcType=VARCHAR,mode=IN},
+          #{message,jdbcType=VARCHAR,mode=IN},
+          #{payMoney,jdbcType=DOUBLE,mode=IN},
+          #{goodsId,jdbcType=INTEGER,mode=IN},
+        )
+    </select>
+
+    <!--获取秒杀的数量-->
+    <select id="getSeckillCount" resultType="java.lang.Integer">
+        select count(*)
+        from t_seckill
+    </select>
+</mapper>

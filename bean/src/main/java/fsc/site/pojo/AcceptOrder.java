@@ -20,5 +20,5 @@ public class AcceptOrder extends Order{
         this.orderItems = orderItems;
     }
 
-    private List<OrderItem> orderItems ;
+    private List<OrderItem> orderItems;
 }

@@ -111,6 +111,10 @@ public class ShiroConfig {
         filterChain.put("/likes==POST","anon");
         filterChain.put("/goods/*==GET","anon");
         filterChain.put("/getGoodsCount==GET","anon");
+        filterChain.put("/seckill/**/detail==GET","anon");
+        filterChain.put("/seckill/list==GET","anon");
+        filterChain.put("/seckill/now==GET","anon");
+        filterChain.put("/seckill/count==GET","anon");
         filterChain.put("/getPermission==GET","authc");
         //这个表示所有页面都需要认证
         filterChain.put("/**","authc");

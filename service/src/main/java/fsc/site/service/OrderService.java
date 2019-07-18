@@ -2,10 +2,7 @@ package fsc.site.service;
 
 import com.github.pagehelper.PageHelper;
 import fsc.site.dao.OrderMapperDao;
-import fsc.site.pojo.Order;
-import fsc.site.pojo.OrderItem;
-import fsc.site.pojo.ResultOrder;
-import fsc.site.pojo.User;
+import fsc.site.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +75,7 @@ public class OrderService {
     }
 
     /**
-     * 支付一个订单 还需要将订单中商品库存进行减少 所以要开启事务
+     * 支付一个订单 还需要将订单中商品库存进行减少（其实库存应该在下订单时就减少） 所以要开启事务
      * @param orderId
      * @return
      */
@@ -231,5 +228,23 @@ public class OrderService {
         //先根据用户名查询当前用户的id
         Integer userId = userService.queryIdByUserName(userName).getUserId();
         return orderMapperDao.getUserOrderCount(userId,status);
+    }
+
+    /**
+     * 用于添加秒杀订单
+     * @param acceptOrder
+     * @return
+     */
+    public Integer addSeckillOrder(AcceptOrder acceptOrder){
+        List<OrderItem> list = acceptOrder.getOrderItems();
+        Order order = acceptOrder;
+        orderMapperDao.addOrder(order);
+        //再循环遍历一次订单项 将订单号添加到订单项里面去
+        for(OrderItem orderItem:list){
+            orderItem.setOrderId(order.getOrderId());
+        }
+        //添加订单项
+        orderMapperDao.addOrderItem(list);
+        return order.getOrderId();
     }
 }

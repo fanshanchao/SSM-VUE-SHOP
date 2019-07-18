@@ -7,7 +7,7 @@
     <!--namespace是命名空间 现在使用接口来查询 这个命名空间要写为接口的路径-->
     <!--根据用户名查用户的用户名和密码-->
     <select id="queryByUserName" parameterType="java.lang.String" resultType="fsc.site.pojo.User">
-        select user_name,user_password from t_user where user_name =#{userName}
+        select user_id,user_name,user_password from t_user where user_name =#{userName}
     </select>
     <!--通过用户名查询用户的id-->
     <select id="queryIdByUserName" resultType="fsc.site.pojo.User">

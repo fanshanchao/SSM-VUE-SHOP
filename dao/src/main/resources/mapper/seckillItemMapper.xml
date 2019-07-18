@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fsc.site.dao.SeckillItemMapperDao">
+    <!--创建一个秒杀明细 插入成功代表秒杀成功-->
+    <insert id="addSeckillItem">
+        insert ignore into t_seckillItem(seckill_id,user_id,create_time,seckill_state)
+        value (#{seckillId},#{userId},#{createTime},0)
+    </insert>
+
+    <!--获取一个秒杀明细以及秒杀的相关信息-->
+    <select id="getSuccessSeckill" resultMap="SuccessSeckillMap">
+    SELECT a.seckill_id,a.seckill_repertory,a.seckill_price,a.start_time,a.end_time,b.goods_id,b.goods_name,b.goods_desc,b.image_url,c.user_id,c.create_time
+    FROM t_seckill as a
+    INNER JOIN t_goods as b
+    ON a.goods_id = b.goods_id
+    INNER JOIN t_seckillItem as c
+    ON a.seckill_id = c.seckill_id
+    where c.seckill_id = #{seckillId} and c.user_id = #{userId}
+    </select>
+
+    <!--查询所有秒杀明细-->
+    <select id="getSuccessSeckillList" resultMap="SuccessSeckillMap">
+    SELECT a.seckill_id,a.seckill_repertory,a.seckill_price,a.start_time,a.end_time,b.goods_id,b.goods_name,b.goods_desc,b.image_url,c.user_id,c.create_time as
+    create_time_c
+    FROM t_seckill as a
+    INNER JOIN t_goods as b
+    ON a.goods_id = b.goods_id
+    INNER JOIN t_seckillItem as c
+    ON a.seckill_id = c.seckill_id
+    </select>
+    <resultMap id="SuccessSeckillMap" type="fsc.site.pojo.SuccessSeckill">
+        <id property="seckillId" column="seckill_id"></id>
+        <id property="userId" column="user_id"></id>
+        <result property="createTime" column="create_time_c"></result>
+        <association property="seckill" javaType="fsc.site.pojo.Seckill">
+            <id property="seckillId" column="seckill_id"></id>
+            <result property="seckillRepertory" column="seckill_repertory"></result>
+            <result property="seckillPrice" column="seckill_price"></result>
+            <result property="startTime" column="start_time"></result>
+            <result property="endTime" column="end_time"></result>
+            <association property="goods" javaType="fsc.site.pojo.Goods">
+                <result property="goodsId" column="goods_id"></result>
+                <result property="goodsName" column="goods_name"></result>
+                <result property="goodsDesc" column="goods_desc"></result>
+                <result property="imageUrl" column="image_url"></result>
+            </association>
+        </association>
+    </resultMap>
+</mapper>

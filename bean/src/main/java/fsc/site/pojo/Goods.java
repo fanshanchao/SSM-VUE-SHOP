@@ -1,5 +1,6 @@
 package fsc.site.pojo;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -7,7 +8,7 @@ import java.math.BigDecimal;
  * @date 2019/4/8 13:58
  * 这个类是商品的pojo类
  */
-public class Goods {
+public class Goods implements Serializable {
     public Goods(){
 
     }
