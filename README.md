@@ -1,16 +1,14 @@
-# 零配置SSM+VUE前后端分离网上商城
+# 零配置SSM+VUE前后端分离网上商城（已实现秒杀）
 [前端代码地址](https://github.com/fanshanchao/shop-vue)
 ## 项目介绍
-前后端分离的网上商城。实现了普通商城拥有的主要功能，并且利用shiro实现了后台权限管理，可以修改用户权限，修改用户角色。并且只有非商城会有的权限才可以进入后台管理页面。整个项目使用rest风格来获取数据。前后端通过json数据来进行交互。[项目演示地址](http://120.76.56.254:8084/#/)
+前后端分离的网上商城。实现了普通商城拥有的主要功能，**并且在2019.07.19添加了秒杀功能，并且对秒杀做了相应的优化**。并且利用shiro实现了后台权限管理，可以修改用户权限，修改用户角色。并且只有非商城会有的权限才可以进入后台管理页面。整个项目使用rest风格来获取数据。前后端通过json数据来进行交互。[项目演示地址](http://120.76.56.254:8084/#/)
 ## 项目代码结构
---bean  项目所到的javabean
---core  本来想把核心代码写在里面的，但好像用不到...
---dao  访问数据库的代码
---myweb spring，spring mvc，shiro的核心代码和整个项目的配置都在这里面
---service 服务层代码
---task 本来想把定时任务的代码写在里面，但是项目没用到定时任务
-
-
+* --bean  项目所到的javabean
+* --core  本来想把核心代码写在里面的，但好像用不到...
+* --dao  访问数据库的代码
+* --myweb spring，spring mvc，shiro的核心代码和整个项目的配置都在这里面
+* --service 服务层代码
+* --task 本来想把定时任务的代码写在里面，但是项目没用到定时任务
 
 ## 项目所用技术
 ### 后端
@@ -18,10 +16,12 @@
 2. **shiro**：shiro完成了登陆验证以及用户权限管理部分。
 3. **elasticsearch**：简单的使用了elasticsearch完成了搜索商品功能，但是权限安全方面还没有配置（xpath貌似要钱加上麻烦），无需登陆就可以访问修改里面的数据。所以各位大佬放过它。
 4. **mysql**
-5. **redis**：shiro的会话缓存和权限缓存用到了redis，以及注册时的邮箱验证码也暂存在了redis中
+5. **redis**：shiro的会话缓存和权限缓存用到了redis，以及注册时的邮箱验证码也暂存在了redis中，**秒杀优化也用到了redis**
 ### 前端
 1. **vue全集桶**
 2. **饿了吗开发的element框架**
+
+
 
 ## 项目所有模块简介
 
@@ -56,6 +56,104 @@
 ![Image text](https://github.com/fanshanchao/images/blob/master/shopImages/%E8%AE%A2%E5%8D%95%E7%AE%A1%E7%90%86.png)
 #### 评价管理
 这个模板本来想写的，后来觉得太浪费时间，感觉就是一堆curd就没有写了。
+### 秒杀功能（2019/07/19添加）
+具有商品添加权限的管理员可以在后台管理页面创建秒杀。商城会员在秒杀开启之后可以进行抢购。
+
+秒杀所用的mysql表：
+![Image text](https://github.com/fanshanchao/images/blob/master/shopImages/%E7%A7%92%E6%9D%80mysql%E8%A1%A8.png)
+
+秒杀优化使用的存储过程创建代码：
+```
+  CREATE  PROCEDURE `exec_seckill`(IN seckillId INT,IN userId INT,IN createTime DATETIME,OUT result INT,
+IN receiverName VARCHAR(225),IN mobile VARCHAR(225),IN address VARCHAR(225),IN message VARCHAR(225),IN payMoney DOUBLE,IN goodsId INT)
+BEGIN
+	#定义一个变量用于看插入是否成功
+	DECLARE insert_count INT DEFAULT 0;
+	#定义一个变量用于保存订单id
+	DECLARE order_id INT DEFAULT 0;
+	#开启事务
+	START TRANSACTION;
+	INSERT IGNORE INTO t_seckillItem(seckill_id,user_id,create_time,seckill_state)
+	VALUES(seckillId,userId,createTime,0);
+	#影响行数插入到中
+	SELECT ROW_COUNT() INTO insert_count;
+	#如果影响行数等于0代表重复秒杀 返回-1
+	IF(insert_count = 0) THEN
+		ROLLBACK;
+		SET result = -1;
+	ELSEIF(insert_count < 0) THEN
+		ROLLBACK;
+		SET result = -2;
+	#插入明细成功后执行减库存操作
+	ELSE 
+		UPDATE t_seckill
+		SET seckill_repertory = seckill_repertory - 1
+		WHERE seckill_id = seckillId
+		AND seckill_repertory > 0
+		AND end_time >= createTime
+		AND start_time <= create_time;
+		#再查看更新库存是否成功
+		SELECT ROW_COUNT() INTO insert_count;
+		IF(insert_count = 0) THEN
+			ROLLBACK;
+			SET result = -3;
+		ELSEIF (insert_count < 0) THEN
+			ROLLBACK;
+			SET result = -2;
+		#更新库存成功再进行添加订单操作
+		ELSE
+			INSERT IGNORE INTO t_order(receiver_name,mobile,address,message,create_date,status,pay_money,user_id)
+			VALUES(receiverName,mobile,address,message,createTime,0,payMoney,userId);
+			#查看插入是否成功
+			SELECT LAST_INSERT_ID() INTO order_id;
+			IF(order_id = 0) THEN
+				ROLLBACK;
+				SET result = -1;
+			ELSEIF(order_id < 0) THEN
+				ROLLBACK;
+				SET result = -2;
+			ELSE
+				#插入订单成功后插入订单明细
+				insert IGNORE into t_orderItem(order_id,goods_id,goods_number,goods_price)
+				VALUES(insert_count,goodsId,1,payMoney);
+				##插入后再判断插入是否成功
+				SELECT ROW_COUNT() INTO insert_count;
+				IF(insert_count = 0) THEN
+					ROLLBACK;
+					SET result = -1;
+				ELSEIF(insert_count < 0) THEN
+					ROLLBACK;
+					SET result = -2;
+				ELSE 
+					#输出订单id
+					SET result = order_id;
+					COMMIT;
+				END IF;
+			END IF;	
+		END IF;
+	END IF;
+END
+```
+
+#### 秒杀流程
+![](https://github.com/fanshanchao/images/blob/master/shopImages/%E7%A7%92%E6%9D%80%E6%B5%81%E7%A8%8B.png)
+
+#### 秒杀做的相应优化
+
+1. 使用redis缓存秒杀地址
+    - 存储到redis中的Seckill对象要自定义序列化来存储，例如protostuff工具
+2. 前端到时暴露接口，按钮防重复点击秒杀
+
+3. 事务竞争优化，减少事务锁时间，将多条mysql执行的事务放到存储过程中去。
+    - 不要过度使用存储过程
+4. 将插入明细放在事务的前面，可以优化一些重复秒杀，插入操作可以避免行级锁。
+
+5. 将秒杀信息存入到redis中，执行秒杀操作从redis中获取秒杀信息，避免从mysql中去获取
+
+
+#### 还可以使用的优化方案
+![](https://github.com/fanshanchao/images/blob/master/shopImages/%E9%AB%98%E5%B9%B6%E5%8F%91%E4%BC%98%E5%8C%96%E6%9E%B6%E6%9E%84.png)
+
 
 ### 前台管理模块
 前台管理分为**购物车管理**和**订单管理**，个人中心嫌麻烦也没有写了。
@@ -67,6 +165,7 @@
 支付简单的模拟了下，没有输入密码等验证操作，这个模块其实值得好好写一写的，以后要是还有时间就再研究下这个模块吧。
 ### 搜索商品模块
 搜索功能用elasticseearch做的，学elasticsearch快一周，好在最后成功的用上了。elasticsearch里面的数据和mysql商品表里面的是一样的，每次向mysql添加商品修改商品也会发送请求到elasticsearch中去添加或修改商品（这里是通过使用elasticsearch的java api完成的）。[我的elasticsearch安装和使用笔记](https://segmentfault.com/n/1330000019063224)
+
 ## 部署过程
 经过了上次部署，这次部署还是非常顺利的，大概花了一下午就搞好了。前端vue打包放在了nginx里，nginx也用作了图片服务器保存商品的图片，elasticsearch做了搜索功能，后端代码直接打包war放在tomcat的webapp目录下。
 ## 最后
