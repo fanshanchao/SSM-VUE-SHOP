@@ -49,8 +49,8 @@
     </update>
 
     <!--使用存储过程执行秒杀-->
-    <select id="seckillProcess" statementType="CALLABLE">
-        call exec_seckill (
+    <select id="seckillProcess" statementType="CALLABLE" resultType="java.lang.Integer">
+        {call exec_seckill (
           #{seckillId,jdbcType=INTEGER,mode=IN},
           #{userId,jdbcType=INTEGER,mode=IN},
           #{createTime ,jdbcType=TIMESTAMP,mode=IN},
@@ -60,8 +60,8 @@
           #{address,jdbcType=VARCHAR,mode=IN},
           #{message,jdbcType=VARCHAR,mode=IN},
           #{payMoney,jdbcType=DOUBLE,mode=IN},
-          #{goodsId,jdbcType=INTEGER,mode=IN},
-        )
+          #{goodsId,jdbcType=INTEGER,mode=IN}
+        )}
     </select>
 
     <!--获取秒杀的数量-->

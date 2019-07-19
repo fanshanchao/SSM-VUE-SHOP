@@ -169,7 +169,7 @@ public class SeckillService {
     public SuccessSeckill seckillProcess(Integer seckillId, Integer userId, String md5, AcceptOrder acceptOrder)throws SeckillExeception,RepeatSeckillExeception,SeckillShutDownExeception{
         //验证md5值是否正确
         if(!getMd5(seckillId).equals(md5)){
-            throw new SeckillExeception("秒杀异常");
+            throw new SeckillExeception("接口地址不正确，秒杀异常");
         }
         //查看这个秒杀的信息
         Seckill seckill = null;
@@ -180,7 +180,7 @@ public class SeckillService {
             seckill = seckillMapperDao.getSeckill(seckillId);
             if(seckill==null){
                 //代表没有这个秒杀
-                throw new SeckillExeception("秒杀异常");
+                throw new SeckillExeception("没有这个秒杀");
             }
             //将秒杀信息存入到redis中
             redisDao.putSeckill(seckill);
@@ -204,7 +204,7 @@ public class SeckillService {
         Integer result = null;
         result = (Integer) map.get("result");
         if(result==null||result==-2){
-            throw new SeckillExeception("秒杀异常");
+            throw new SeckillExeception("秒杀异常 result的值是"+result);
         }else if(result == -1){
             throw new RepeatSeckillExeception("重复秒杀");
         }else if(result == -3){

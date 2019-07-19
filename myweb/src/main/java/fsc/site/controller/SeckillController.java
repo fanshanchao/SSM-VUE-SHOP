@@ -98,7 +98,7 @@ public class SeckillController{
         //User user1 = userService.queryIdByUserName(user.getUserName());
         SuccessSeckill successSeckill;
         try {
-            successSeckill = seckillService.executeSeckill(seckillId,user.getUserId(),md5,acceptOrder);
+            successSeckill = seckillService.seckillProcess(seckillId,user.getUserId(),md5,acceptOrder);
         }catch (RepeatSeckillExeception e1){
             return ResponseGenerator.getFailureReponse(e1.getMessage());
         }catch (SeckillShutDownExeception e2){
