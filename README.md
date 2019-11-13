@@ -10,6 +10,17 @@
 * --service 服务层代码
 * --task 本来想把定时任务的代码写在里面，但是项目没用到定时任务
 
+## 使用教程
+### 后端
+1. 运行/master/myweb/src/main/sql下的shop.sql文件，在你自己的数据库生成想对应的库和表。
+2. 将本项目项目导入到你自己的idea或elipse中
+2. 修改SSM-VUE-SHOP/myweb/src/main/resources路径下的javamail.properties为你自己所开启的邮箱stmp服务的账号和密码。（需要自己先去开始一个smtp服务，具体教程可百度）。
+3. 修改/SSM-VUE-SHOP/blob/master/myweb/src/main/resources/dataSource.properties中mysql和redis的密码为你自己主机上的账号和密码。
+4. 直接运行项目
+5. 再到[前端代码地址](https://github.com/fanshanchao/shop-vue)按教程部署运行，然后就可以成功访问项目了。
+### 注意点
+1. 由于es安装麻烦，所以搜索功能被移除了。如果想使用这个可以自己去安装es，我再给你说下教程，这里嫌麻烦就没写了。
+
 ## 项目所用技术
 ### 后端
 1. **SSM**：并且使用配置类无xml（mybatis还是用了xml）。
