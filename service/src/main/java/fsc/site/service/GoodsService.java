@@ -59,7 +59,7 @@ public class GoodsService {
          goodsMapperDao.addGoods(goods);
          ResultGoods resultGoods = goodsMapperDao.getGoodsById(goods.getGoodsId());
          //添加到elasticsearch中去
-        elasticsearchService.putGoods(resultGoods);
+        //elasticsearchService.putGoods(resultGoods);
         return goods.getGoodsId();
     }
     /**
@@ -81,7 +81,7 @@ public class GoodsService {
         goodsMapperDao.updateGoods(goods);
         ResultGoods resultGoods = goodsMapperDao.getGoodsById(goods.getGoodsId());
         //插入到elasticsearch中去
-        elasticsearchService.putGoods(resultGoods);
+        //elasticsearchService.putGoods(resultGoods);
         return goods.getGoodsId();
     }
 
@@ -93,7 +93,7 @@ public class GoodsService {
     @Transactional
     public Integer outGoods(Integer goodsId){
         //删除elasticsearch中的这个商品
-        elasticsearchService.deleteGoods(goodsId);
+        //elasticsearchService.deleteGoods(goodsId);
         return goodsMapperDao.outGoods(goodsId);
     }
 
@@ -106,7 +106,7 @@ public class GoodsService {
     public Integer goGoods(Integer goodsId){
         goodsMapperDao.goGoods(goodsId);
         ResultGoods resultGoods = goodsMapperDao.getGoodsById(goodsId);
-        elasticsearchService.putGoods(resultGoods);
+        //elasticsearchService.putGoods(resultGoods);
         return goodsId;
     }
 
