@@ -150,7 +150,7 @@
             <!--数据库-->
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.11</version>
+            <version>8.0.16</version>
         </dependency>
         <!-- 数据库连接池 使用dpcp -->
         <dependency>
