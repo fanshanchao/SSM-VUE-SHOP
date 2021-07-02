@@ -258,7 +258,7 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>6.4.3</version>
+            <version>6.8.15</version>
         </dependency>
         <!-- velocity模板引擎 -->
         <!--<dependency>-->
